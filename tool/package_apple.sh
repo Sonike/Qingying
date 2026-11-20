@@ -27,9 +27,11 @@ exe="$bin/$(plutil -extract CFBundleExecutable raw "$info")"
 lipo -archs "$exe"
 if [[ $1 == ios ]]; then
   test "$(plutil -extract DTPlatformName raw "$info")" = iphoneos
-  lipo -verify_arch arm64 "$exe"
+  lipo "$exe" -verify_arch arm64
   test -d "$app/Frameworks/App.framework"
-  find "$app/Frameworks" -depth -type d -name '*.framework' -exec codesign --force --sign - --preserve-metadata=identifier,entitlements {} \;
+  while IFS= read -r -d '' framework; do
+    codesign --force --sign - --preserve-metadata=identifier,entitlements "$framework"
+  done < <(find "$app/Frameworks" -depth -type d -name '*.framework' -print0)
   (cd "$stage" && zip -q -yr "$out-ios-resign.ipa" Payload)
   unzip -tq "$out-ios-resign.ipa"
 else
