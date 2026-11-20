@@ -22,6 +22,8 @@ class PgcCardV extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: ColorScheme.of(context).surface,
+      surfaceTintColor: Colors.transparent,
       shape: const RoundedRectangleBorder(borderRadius: Style.mdRadius),
       child: InkWell(
         borderRadius: Style.mdRadius,
@@ -47,6 +49,10 @@ class PgcCardV extends StatelessWidget {
                       ),
                       PBadge(
                         text: item.badge,
+                        backgroundColor: item.badgeColors.resolve(
+                          item.badge,
+                          Theme.of(context).brightness,
+                        ),
                         top: 6,
                         right: 6,
                         bottom: null,

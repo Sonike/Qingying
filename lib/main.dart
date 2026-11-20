@@ -35,6 +35,7 @@ import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:catcher_2/catcher_2.dart';
 import 'package:collection/collection.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dynamic_color/dynamic_color.dart' show DynamicColorPlugin;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -91,6 +92,17 @@ Future<void> _initAppPath() async {
   appSupportDirPath = (await getApplicationSupportDirectory()).path;
 }
 
+Future<void> _initAndroidDecoder() async {
+  if (GStorage.setting.containsKey(SettingBoxKey.enableHA)) return;
+  try {
+    // 虚拟 MediaCodec 某些机型在播放首帧或退出播放时会卡住。
+    final device = await DeviceInfoPlugin().androidInfo;
+    await GStorage.setting.put(SettingBoxKey.enableHA, device.isPhysicalDevice);
+  } on PlatformException {
+    // 获取设备信息失败时沿用播放器默认值。
+  }
+}
+
 void main() async {
   ScaledWidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
@@ -106,6 +118,7 @@ void main() async {
   await Future.wait([
     _initDownPath(),
     _initTmpPath(),
+    if (Platform.isAndroid) _initAndroidDecoder(),
     CacheManager.ensureInitialized(),
     ?FontUtils.init(),
   ]);

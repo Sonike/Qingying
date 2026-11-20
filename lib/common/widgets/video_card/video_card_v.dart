@@ -1,5 +1,4 @@
 import 'package:PiliPlus/common/style.dart';
-import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
@@ -86,178 +85,206 @@ class VideoCardV extends StatelessWidget {
       cover: videoItem.cover,
       bvid: videoItem.bvid,
     );
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Card(
-          child: InkWell(
+    final colors = ColorScheme.of(context);
+    final badges = [
+      if (videoItem.goto == 'bangumi' && videoItem.pgcBadge != null)
+        videoItem.pgcBadge!,
+      if (videoItem.goto == 'picture') '动态',
+      if (videoItem.isFollowed) '已关注',
+      if (videoItem.rcmdReason case final reason? when reason.isNotEmpty)
+        reason,
+    ];
+    final owner = videoItem.owner.name ?? '';
+    final date = videoItem is RcmdVideoItemModel && videoItem.pubdate != null
+        ? DateFormatUtils.dateFormat(
+            videoItem.pubdate,
+            short: shortFormat,
+            long: longFormat,
+          )
+        : '';
+    return Material(
+      color: colors.surface,
+      borderRadius: Style.borderRadius6,
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        children: [
+          InkWell(
             onTap: onPushDetail,
             onLongPress: onLongPress,
             onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-            borderRadius: const .all(.circular(12)),
             child: Column(
-              crossAxisAlignment: .start,
+              crossAxisAlignment: .stretch,
               children: [
                 AspectRatio(
-                  aspectRatio: Style.aspectRatio,
+                  aspectRatio: Style.aspectRatio16x9,
                   child: LayoutBuilder(
-                    builder: (context, boxConstraints) {
-                      double maxWidth = boxConstraints.maxWidth;
-                      double maxHeight = boxConstraints.maxHeight;
-                      return Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          NetworkImgLayer(
-                            src: videoItem.cover,
-                            width: maxWidth,
-                            height: maxHeight,
-                            borderRadius: const .vertical(top: .circular(12)),
-                          ),
-                          if (videoItem.duration > 0)
-                            PBadge(
-                              bottom: 6,
-                              right: 7,
-                              size: .small,
-                              type: .gray,
-                              text: DurationUtils.formatDuration(
-                                videoItem.duration,
+                    builder: (context, box) => Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        NetworkImgLayer(
+                          src: videoItem.cover,
+                          width: box.maxWidth,
+                          height: box.maxHeight,
+                          borderRadius: .zero,
+                        ),
+                        Align(
+                          alignment: Alignment.bottomCenter,
+                          child: DecoratedBox(
+                            decoration: const BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [Colors.transparent, Color(0xAA000000)],
                               ),
                             ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-                content(context),
-              ],
-            ),
-          ),
-        ),
-        if (videoItem.goto == 'av')
-          Positioned(
-            right: -5,
-            bottom: -2,
-            width: 29,
-            height: 29,
-            child: VideoPopupMenu(
-              iconSize: 17,
-              videoItem: videoItem,
-              onRemove: onRemove,
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget content(BuildContext context) {
-    final theme = Theme.of(context);
-    return Expanded(
-      child: Padding(
-        padding: const .fromLTRB(6, 5, 6, 5),
-        child: Column(
-          crossAxisAlignment: .start,
-          children: [
-            Expanded(
-              child: Text(
-                videoItem.title,
-                maxLines: 2,
-                overflow: .ellipsis,
-                style: const TextStyle(height: 1.38),
-              ),
-            ),
-            videoStat(theme),
-            Row(
-              spacing: 2,
-              children: [
-                if (videoItem.goto == 'bangumi')
-                  PBadge(
-                    text: videoItem.pgcBadge,
-                    isStack: false,
-                    size: .small,
-                    type: .line_primary,
-                    fontSize: 9,
-                  ),
-                if (videoItem.rcmdReason != null)
-                  PBadge(
-                    text: videoItem.rcmdReason,
-                    isStack: false,
-                    size: .small,
-                    type: .secondary,
-                  ),
-                if (videoItem.goto == 'picture')
-                  const PBadge(
-                    text: '动态',
-                    isStack: false,
-                    size: .small,
-                    type: .line_primary,
-                    fontSize: 9,
-                  ),
-                if (videoItem.isFollowed)
-                  const PBadge(
-                    text: '已关注',
-                    isStack: false,
-                    size: .small,
-                    type: .secondary,
-                  ),
-                Expanded(
-                  flex: 1,
-                  child: Text(
-                    videoItem.owner.name.toString(),
-                    maxLines: 1,
-                    overflow: .ellipsis,
-                    semanticsLabel: 'UP：${videoItem.owner.name}',
-                    style: TextStyle(
-                      height: 1.5,
-                      fontSize: theme.textTheme.labelMedium!.fontSize,
-                      color: theme.colorScheme.outline,
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(6, 15, 6, 4),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: FittedBox(
+                                      alignment: Alignment.centerLeft,
+                                      fit: BoxFit.scaleDown,
+                                      child: Row(
+                                        mainAxisSize: .min,
+                                        spacing: 7,
+                                        children: [
+                                          StatWidget(
+                                            type: .play,
+                                            value: videoItem.stat.view,
+                                            color: Colors.white,
+                                          ),
+                                          if (videoItem.goto != 'picture')
+                                            StatWidget(
+                                              type: .danmaku,
+                                              value: videoItem.stat.danmu,
+                                              color: Colors.white,
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  if (videoItem.duration > 0) ...[
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      DurationUtils.formatDuration(
+                                        videoItem.duration,
+                                      ),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 11,
+                                        fontWeight: .w500,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                if (videoItem.goto == 'av') const SizedBox(width: 10),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 5, 8, 7),
+                    child: Column(
+                      crossAxisAlignment: .start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            videoItem.title,
+                            maxLines: 2,
+                            overflow: .ellipsis,
+                            style: TextStyle(
+                              fontSize: 14,
+                              height: 1.35,
+                              color: colors.onSurface,
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(
+                            right: videoItem.goto == 'av' ? 16 : 0,
+                          ),
+                          child: Row(
+                            spacing: 4,
+                            children: [
+                              if (badges.isEmpty)
+                                ExcludeSemantics(child: _upMark(colors.outline))
+                              else
+                                Flexible(
+                                  child: Text(
+                                    badges.join(' · '),
+                                    maxLines: 1,
+                                    overflow: .ellipsis,
+                                    style: TextStyle(
+                                      color: colors.onPrimaryContainer,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ),
+                              Expanded(
+                                flex: 2,
+                                child: Text(
+                                  date.isEmpty ? owner : '$owner · $date',
+                                  maxLines: 1,
+                                  overflow: .ellipsis,
+                                  semanticsLabel: date.isEmpty
+                                      ? 'UP：$owner'
+                                      : 'UP：$owner，$date',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: colors.outline,
+                                    height: 1.25,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
-          ],
-        ),
+          ),
+          if (videoItem.goto == 'av')
+            Positioned(
+              right: 0,
+              bottom: 0,
+              width: 28,
+              height: 29,
+              child: VideoPopupMenu(
+                iconSize: 16,
+                videoItem: videoItem,
+                onRemove: onRemove,
+              ),
+            ),
+        ],
       ),
     );
   }
 
+  static Widget _upMark(Color color) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 2),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(3),
+      border: Border.all(color: color, width: 0.8),
+    ),
+    child: Text(
+      'UP',
+      style: TextStyle(
+        fontSize: 8,
+        fontWeight: .w600,
+        height: 1.18,
+        color: color,
+      ),
+    ),
+  );
+
   static final shortFormat = DateFormat('M-d');
   static final longFormat = DateFormat('yy-M-d');
-
-  Widget videoStat(ThemeData theme) {
-    return Row(
-      children: [
-        StatWidget(
-          type: .play,
-          value: videoItem.stat.view,
-        ),
-        if (videoItem.goto != 'picture') ...[
-          const SizedBox(width: 4),
-          StatWidget(
-            type: .danmaku,
-            value: videoItem.stat.danmu,
-          ),
-        ],
-        if (videoItem is RcmdVideoItemModel) ...[
-          const Spacer(),
-          Text.rich(
-            maxLines: 1,
-            TextSpan(
-              style: TextStyle(
-                fontSize: theme.textTheme.labelSmall!.fontSize,
-                color: theme.colorScheme.outline.withValues(alpha: 0.8),
-              ),
-              text: DateFormatUtils.dateFormat(
-                videoItem.pubdate,
-                short: shortFormat,
-                long: longFormat,
-              ),
-            ),
-          ),
-          const SizedBox(width: 2),
-        ],
-      ],
-    );
-  }
 }

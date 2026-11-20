@@ -3,12 +3,10 @@ import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_floating_header.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo, MainListReply;
 import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/pages/common/fab_mixin.dart';
 import 'package:PiliPlus/pages/common/reply/reply_footer_mixin.dart';
 import 'package:PiliPlus/pages/common/reply/vote/reply_vote_item.dart';
 import 'package:PiliPlus/pages/video/reply/controller.dart';
@@ -36,9 +34,6 @@ class VideoReplyPanel extends StatefulWidget {
 class _VideoReplyPanelState extends State<VideoReplyPanel>
     with
         AutomaticKeepAliveClientMixin,
-        SingleTickerProviderStateMixin,
-        BaseFabMixin,
-        FabMixin,
         ReplyFooterMixin<VideoReplyPanel, MainListReply> {
   @override
   late ColorScheme colorScheme;
@@ -69,74 +64,129 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return fabAnimWrapper(
-      child: refreshIndicator(
-        onRefresh: controller.onRefresh,
-        isClampingScrollPhysics: widget.isNested,
-        child: ScaffoldLayout(
-          body: CustomScrollView(
-            controller: widget.isNested ? null : controller.scrollController,
-            physics: const AlwaysScrollableScrollPhysics(),
-            key: const PageStorageKey(_VideoReplyPanelState),
-            slivers: [
-              SliverFloatingHeaderWidget(
-                backgroundColor: colorScheme.surface,
-                child: Padding(
-                  padding: const .fromLTRB(12, 2.5, 6, 2.5),
-                  child: Obx(() {
-                    final sortType = controller.sortType.value;
-                    return Row(
-                      mainAxisAlignment: .spaceBetween,
-                      children: [
-                        Text(
-                          sortType.desc,
-                          style: const TextStyle(fontSize: 13),
-                        ),
-                        TextButton.icon(
-                          style: Style.buttonStyle,
-                          onPressed: controller.queryBySort,
-                          icon: Icon(
-                            Icons.sort,
-                            size: 16,
-                            color: colorScheme.secondary,
-                          ),
-                          label: Text(
-                            sortType.descShort,
+    return Column(
+      children: [
+        Expanded(
+          child: refreshIndicator(
+            onRefresh: controller.onRefresh,
+            isClampingScrollPhysics: widget.isNested,
+            child: CustomScrollView(
+              controller: widget.isNested ? null : controller.scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              key: const PageStorageKey(_VideoReplyPanelState),
+              slivers: [
+                SliverFloatingHeaderWidget(
+                  backgroundColor: colorScheme.surface,
+                  child: Padding(
+                    padding: const .fromLTRB(12, 2.5, 6, 2.5),
+                    child: Obx(() {
+                      final sortType = controller.sortType.value;
+                      return Row(
+                        mainAxisAlignment: .spaceBetween,
+                        children: [
+                          Text(
+                            sortType.desc,
                             style: TextStyle(
                               fontSize: 13,
-                              color: colorScheme.secondary,
+                              color: colorScheme.outline,
                             ),
                           ),
-                        ),
-                      ],
-                    );
-                  }),
+                          TextButton.icon(
+                            style: Style.buttonStyle,
+                            onPressed: controller.queryBySort,
+                            icon: Icon(
+                              Icons.sort,
+                              size: 16,
+                              color: colorScheme.outline,
+                            ),
+                            label: Text(
+                              sortType.descShort,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: colorScheme.outline,
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    }),
+                  ),
                 ),
-              ),
-              Obx(() => _buildBody(controller.loadingState.value)),
-            ],
+                Obx(() => _buildBody(controller.loadingState.value)),
+              ],
+            ),
           ),
-          fab: SlideTransition(
-            position: fabAnimation,
-            child: Padding(
-              padding: .only(
-                right: kFloatingActionButtonMargin,
-                bottom: kFloatingActionButtonMargin + padding.bottom,
-              ),
-              child: FloatingActionButton(
-                heroTag: null,
-                onPressed: () {
-                  feedBack();
-                  controller.onReply(
-                    null,
-                    oid: controller.videoCtr.aid,
-                    replyType: controller.replyType,
-                    mentionItem: controller.mentionItem,
-                  );
-                },
-                tooltip: '发表评论',
-                child: const Icon(Icons.reply),
-              ),
+        ),
+        _buildComposerBar(),
+      ],
+    );
+  }
+
+  void _compose({bool openEmoji = false}) {
+    feedBack();
+    controller.onReply(
+      null,
+      oid: controller.videoCtr.aid,
+      replyType: controller.replyType,
+      mentionItem: controller.mentionItem,
+      openEmoji: openEmoji,
+    );
+  }
+
+  Widget _buildComposerBar() {
+    return Material(
+      color: colorScheme.surface,
+      child: SafeArea(
+        top: false,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            border: Border(
+              top: BorderSide(color: colorScheme.outlineVariant, width: 0),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Semantics(
+                    container: true,
+                    button: true,
+                    label: '发表评论',
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(24),
+                      onTap: _compose,
+                      child: Ink(
+                        decoration: ShapeDecoration(
+                          shape: const StadiumBorder(),
+                          color: colorScheme.surfaceContainer,
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 5,
+                        ),
+                        child: Text(
+                          '哎呦，不错哦，发条评论吧',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: colorScheme.outline,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                IconButton(
+                  tooltip: '评论表情',
+                  onPressed: () => _compose(openEmoji: true),
+                  icon: Icon(
+                    Icons.sentiment_satisfied_alt_outlined,
+                    color: colorScheme.outline,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -177,6 +227,7 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
                 final item = response[index];
                 final child = ReplyItemGrpc(
                   replyItem: item,
+                  videoComment: true,
                   replyLevel: widget.replyLevel,
                   replyReply: controller.replyReply,
                   onReply: controller.onReply,

@@ -13,6 +13,7 @@ class PBadge extends StatelessWidget {
   final double? left;
   final EdgeInsets? padding;
 
+  final Color? backgroundColor;
   final PBadgeType type;
   final PBadgeSize size;
 
@@ -28,6 +29,7 @@ class PBadge extends StatelessWidget {
     this.bottom,
     this.left,
     this.type = PBadgeType.primary,
+    this.backgroundColor,
     this.size = PBadgeSize.medium,
     this.isStack = true,
     this.fontSize = 11,
@@ -50,8 +52,8 @@ class PBadge extends StatelessWidget {
 
     switch (type) {
       case PBadgeType.primary:
-        bgColor = colorScheme.primary;
-        color = colorScheme.onPrimary;
+        bgColor = backgroundColor ?? colorScheme.primary;
+        color = backgroundColor == null ? colorScheme.onPrimary : Colors.white;
       case PBadgeType.secondary:
         bgColor = colorScheme.secondaryContainer.withValues(alpha: 0.5);
         color = colorScheme.onSecondaryContainer;

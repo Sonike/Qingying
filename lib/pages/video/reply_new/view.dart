@@ -37,6 +37,8 @@ class ReplyPage extends CommonRichTextPubPage {
   const ReplyPage({
     super.key,
     super.items,
+    super.autofocus,
+    super.panelType,
     super.imageLengthLimit,
     super.onSave,
     required this.oid,

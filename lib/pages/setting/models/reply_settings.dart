@@ -67,7 +67,7 @@ List<SettingsModel> get replySettings => [
     title: '屏蔽带货评论',
     leading: const Icon(CustomIcons.shopping_bag_not_interested),
     setKey: SettingBoxKey.antiGoodsReply,
-    defaultVal: false,
+    defaultVal: true,
     onChanged: (value) => ReplyGrpc.antiGoodsReply = value,
   ),
   const NormalModel(

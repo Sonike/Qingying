@@ -140,7 +140,7 @@ class _PgcIndexPageState extends State<PgcIndexPage>
           ? theme.colorScheme.secondaryContainer
           : Colors.transparent,
       textColor: isCurr
-          ? theme.colorScheme.onSecondaryContainer
+          ? theme.colorScheme.primary
           : theme.colorScheme.onSurfaceVariant,
       text: text,
       padding: const .symmetric(horizontal: 6, vertical: 3),

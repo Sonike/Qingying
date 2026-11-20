@@ -31,10 +31,8 @@ class _RcmdPageState extends State<RcmdPage>
   Widget build(BuildContext context) {
     super.build(context);
     final colorScheme = ColorScheme.of(context);
-    final child = Container(
-      clipBehavior: .hardEdge,
-      margin: const .symmetric(horizontal: Style.safeSpace),
-      decoration: const BoxDecoration(borderRadius: Style.mdRadius),
+    final child = ColoredBox(
+      color: colorScheme.surfaceContainer,
       child: refreshIndicator(
         key: controller.refreshKey,
         onRefresh: controller.onRefresh,
@@ -43,7 +41,7 @@ class _RcmdPageState extends State<RcmdPage>
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             SliverPadding(
-              padding: const .only(top: Style.cardSpace, bottom: 100),
+              padding: const .fromLTRB(6, 6, 6, 100),
               sliver: Obx(
                 () => _buildBody(colorScheme, controller.loadingState.value),
               ),
@@ -73,13 +71,14 @@ class _RcmdPageState extends State<RcmdPage>
     return child;
   }
 
-  late final gridDelegate = SliverGridDelegateWithExtentAndRatio(
-    mainAxisSpacing: Style.cardSpace,
-    crossAxisSpacing: Style.cardSpace,
-    maxCrossAxisExtent: Pref.recommendCardWidth,
-    childAspectRatio: Style.aspectRatio,
-    mainAxisExtent: MediaQuery.textScalerOf(context).scale(90),
-  );
+  SliverGridDelegateWithExtentAndRatio get gridDelegate =>
+      SliverGridDelegateWithExtentAndRatio(
+        mainAxisSpacing: 7,
+        crossAxisSpacing: 6,
+        maxCrossAxisExtent: Pref.recommendCardWidth,
+        childAspectRatio: Style.aspectRatio16x9,
+        mainAxisExtent: 15 + MediaQuery.textScalerOf(context).scale(60),
+      );
 
   Widget _buildBody(
     ColorScheme colorScheme,
@@ -157,7 +156,7 @@ class _RcmdPageState extends State<RcmdPage>
     gridDelegate: gridDelegate,
     delegate: const SliverSingleChildDelegate(
       count: 10,
-      child: VideoCardVSkeleton(),
+      child: VideoCardVSkeleton(compact: true),
     ),
   );
 }

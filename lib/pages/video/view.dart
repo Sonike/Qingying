@@ -18,12 +18,14 @@ import 'package:PiliPlus/common/widgets/simple_app_bar.dart';
 import 'package:PiliPlus/common/widgets/sliver/video_header.dart';
 import 'package:PiliPlus/common/widgets/svg/play_icon.dart';
 import 'package:PiliPlus/models/common/episode_panel_type.dart';
+import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/models/common/pgc_episode_type.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
 import 'package:PiliPlus/models_new/video/video_tag/data.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/danmaku/view.dart';
 import 'package:PiliPlus/pages/episode_panel/view.dart';
+import 'package:PiliPlus/pages/main/feed_nav_icon.dart';
 import 'package:PiliPlus/pages/video/ai_conclusion/view.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/local/controller.dart';
@@ -59,7 +61,6 @@ import 'package:PiliPlus/services/shutdown_timer_service.dart'
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
-import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/max_screen_size.dart';
 import 'package:PiliPlus/utils/mobile_observer.dart';
@@ -495,37 +496,15 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     return Obx(
       () {
         final isFullScreen = this.isFullScreen;
-        return SimpleScaffold(
+        final page = SimpleScaffold(
           appBar: removeAppBar(isFullScreen)
               ? null
-              : Obx(
-                  () {
-                    final scrollRatio = videoDetailController.scrollRatio.value;
-                    final brightness = colorScheme.brightness;
-                    final Brightness statusBarBrightness;
-                    final Brightness statusBarIconBrightness;
-                    final backgroundColor = isPortrait && scrollRatio > 0
-                        ? Color.lerp(
-                            Colors.black,
-                            colorScheme.surface,
-                            scrollRatio,
-                          )!
-                        : Colors.black;
-                    if (isPortrait && scrollRatio >= 0.5) {
-                      statusBarBrightness = brightness;
-                      statusBarIconBrightness = brightness.reverse;
-                    } else {
-                      statusBarBrightness = .dark;
-                      statusBarIconBrightness = .light;
-                    }
-                    return SimpleAppBar(
-                      height: padding.top,
-                      backgroundColor: backgroundColor,
-                      brightness: brightness,
-                      statusBarBrightness: statusBarBrightness,
-                      statusBarIconBrightness: statusBarIconBrightness,
-                    );
-                  },
+              : SimpleAppBar(
+                  height: padding.top,
+                  backgroundColor: Colors.black,
+                  brightness: colorScheme.brightness,
+                  statusBarBrightness: .dark,
+                  statusBarIconBrightness: .light,
                 ),
           body: ExtendedNestedScrollView(
             onlyOneScrollInBody: true,
@@ -608,6 +587,16 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
             ),
           ),
         );
+        if (Platform.isAndroid &&
+            isPortrait &&
+            !isFullScreen &&
+            padding.bottom > 0) {
+          return ColoredBox(
+            color: colorScheme.surface,
+            child: SafeArea(top: false, left: false, right: false, child: page),
+          );
+        }
+        return page;
       },
     );
   }
@@ -625,21 +614,22 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       icon = Icons.play_arrow_rounded;
       playStat = '继续';
     }
+    final inkColor = colorScheme.onPrimary;
     final playBtn = Row(
       spacing: 2,
       mainAxisSize: .min,
       children: [
-        Icon(icon, color: colorScheme.primary),
+        Icon(icon, size: 28, color: inkColor),
         Text(
           '$playStat播放',
-          style: TextStyle(color: colorScheme.primary),
+          style: TextStyle(color: inkColor, fontSize: 16),
         ),
       ],
     );
     return Opacity(
-      opacity: videoDetailController.scrollRatio.value,
+      opacity: scrollRatio,
       child: Container(
-        color: colorScheme.surface,
+        color: colorScheme.primary,
         alignment: .topCenter,
         child: SizedBox(
           height: kToolbarHeight,
@@ -657,9 +647,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                       child: IconButton(
                         tooltip: '返回',
                         icon: Icon(
-                          FontAwesomeIcons.arrowLeft,
-                          size: 15,
-                          color: colorScheme.onSurface,
+                          Icons.arrow_back_ios_new_rounded,
+                          size: 21,
+                          color: inkColor,
                         ),
                         onPressed: Get.back,
                       ),
@@ -669,10 +659,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                       height: 34,
                       child: IconButton(
                         tooltip: '返回主页',
-                        icon: Icon(
-                          FontAwesomeIcons.house,
-                          size: 15,
-                          color: colorScheme.onSurface,
+                        icon: IconTheme(
+                          data: IconThemeData(color: inkColor, size: 22),
+                          child: const FeedNavIcon(NavigationBarType.home),
                         ),
                         onPressed:
                             videoDetailController.plPlayerController.onCloseAll,
@@ -685,7 +674,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
               Align(
                 alignment: .centerRight,
                 child: videoDetailController.playedTime == null
-                    ? _moreBtn(colorScheme.onSurface)
+                    ? _moreBtn(inkColor)
                     : SizedBox(
                         width: 42,
                         height: 34,
@@ -701,7 +690,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                           icon: Icon(
                             Icons.more_vert_outlined,
                             size: 19,
-                            color: colorScheme.onSurface,
+                            color: inkColor,
                           ),
                         ),
                       ),
@@ -1325,10 +1314,11 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         dividerColor: Colors.transparent,
         controller: videoDetailController.tabCtr,
         indicator: flag ? const BoxDecoration() : null,
-        labelColor: flag ? colorScheme.onSurface : null,
-        labelStyle:
-            TabBarTheme.of(context).labelStyle?.copyWith(fontSize: 13) ??
-            const TextStyle(fontSize: 13),
+        indicatorSize: TabBarIndicatorSize.label,
+        labelColor: flag ? colorScheme.onSurface : colorScheme.primary,
+        unselectedLabelColor: colorScheme.onSurfaceVariant,
+        labelStyle: const TextStyle(fontSize: 14, fontWeight: .normal),
+        unselectedLabelStyle: const TextStyle(fontSize: 14),
         onTap: (value) {
           void animToTop() {
             if (onTap != null) {
@@ -1356,8 +1346,17 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
             return Obx(() {
               final count = _videoReplyController.count.value;
               return Tab(
-                child: Text(
-                  '评论${count == -1 ? '' : ' ${NumUtils.numFormat(count)}'}',
+                child: Text.rich(
+                  TextSpan(
+                    text: '评论',
+                    children: [
+                      if (count >= 0)
+                        TextSpan(
+                          text: ' ${NumUtils.numFormat(count)}',
+                          style: const TextStyle(fontSize: 11),
+                        ),
+                    ],
+                  ),
                   softWrap: false,
                   overflow: .visible,
                 ),
@@ -1381,7 +1380,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         ),
       ),
       child: SizedBox(
-        height: 45,
+        height: 40,
         child: Row(
           children: [
             if (tabs.isEmpty)
@@ -1391,58 +1390,72 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                 child: Align(
                   alignment: .centerLeft,
                   child: ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: 96.0 * tabs.length),
+                    constraints: BoxConstraints(maxWidth: 66.0 * tabs.length),
                     child: tabBar(),
                   ),
                 ),
               ),
-            SizedBox(
-              height: 32,
-              child: TextButton(
-                style: const ButtonStyle(
-                  padding: WidgetStatePropertyAll(.zero),
-                ),
-                onPressed: videoDetailController.showShootDanmakuSheet,
-                child: Text(
-                  '发弹幕',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: colorScheme.onSurfaceVariant,
+            Container(
+              height: 30,
+              clipBehavior: Clip.antiAlias,
+              decoration: ShapeDecoration(
+                shape: StadiumBorder(
+                  side: BorderSide(
+                    color: colorScheme.outlineVariant,
+                    width: .6,
                   ),
                 ),
               ),
-            ),
-            SizedBox.square(
-              dimension: 38,
-              child: Obx(
-                () {
-                  final ctr = videoDetailController.plPlayerController;
-                  final enableShowDanmaku = ctr.enableShowDanmaku.value;
-                  return IconButton(
-                    onPressed: () {
-                      final newVal = !enableShowDanmaku;
-                      ctr.enableShowDanmaku.value = newVal;
-                      if (!ctr.tempPlayerConf) {
-                        GStorage.setting.put(
-                          SettingBoxKey.enableShowDanmaku,
-                          newVal,
-                        );
-                      }
-                    },
-                    icon: Icon(
-                      size: 22,
-                      enableShowDanmaku
-                          ? CustomIcons.dm_on
-                          : CustomIcons.dm_off,
-                      color: enableShowDanmaku
-                          ? colorScheme.secondary
-                          : colorScheme.outline,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Material(
+                    color: colorScheme.surfaceContainerLow,
+                    child: InkWell(
+                      onTap: videoDetailController.showShootDanmakuSheet,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 11),
+                        child: Center(
+                          child: Text(
+                            '点我发弹幕',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: colorScheme.outline,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                  );
-                },
+                  ),
+                  SizedBox(
+                    width: 39,
+                    child: Obx(() {
+                      final ctr = videoDetailController.plPlayerController;
+                      final enabled = ctr.enableShowDanmaku.value;
+                      return IconButton(
+                        tooltip: enabled ? '关闭弹幕' : '开启弹幕',
+                        padding: EdgeInsets.zero,
+                        onPressed: () {
+                          ctr.enableShowDanmaku.value = !enabled;
+                          if (!ctr.tempPlayerConf) {
+                            GStorage.setting.put(
+                              SettingBoxKey.enableShowDanmaku,
+                              !enabled,
+                            );
+                          }
+                        },
+                        icon: Icon(
+                          enabled ? CustomIcons.dm_on : CustomIcons.dm_off,
+                          size: 21,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      );
+                    }),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 12),
           ],
         ),
       ),

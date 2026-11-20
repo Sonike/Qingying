@@ -121,14 +121,15 @@ class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
                                 vertical: 10,
                               ),
                               indicator: BoxDecoration(
-                                color: theme.colorScheme.secondaryContainer,
+                                color: theme.colorScheme.primary,
                                 borderRadius: const BorderRadius.all(
                                   Radius.circular(20),
                                 ),
                               ),
                               indicatorSize: TabBarIndicatorSize.tab,
-                              labelColor:
-                                  theme.colorScheme.onSecondaryContainer,
+                              labelColor: theme.colorScheme.onPrimary,
+                              unselectedLabelColor:
+                                  theme.colorScheme.onSurfaceVariant,
                               labelStyle:
                                   TabBarTheme.of(
                                     context,
@@ -294,7 +295,7 @@ class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
                 );
               }
             },
-            color: theme.colorScheme.secondary,
+            color: theme.colorScheme.outline,
           ),
         ],
       ),
@@ -387,7 +388,7 @@ class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
                           : FavTabType.cinema.index,
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 8),
-                    color: theme.colorScheme.secondary,
+                    color: theme.colorScheme.outline,
                   ),
                 )
               : const SizedBox.shrink(),

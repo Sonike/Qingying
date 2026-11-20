@@ -3,9 +3,14 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:material_ui/material_ui.dart';
 
 class VideoCardVSkeleton extends StatelessWidget {
-  const VideoCardVSkeleton({super.key, this.skeleton = true});
+  const VideoCardVSkeleton({
+    super.key,
+    this.skeleton = true,
+    this.compact = false,
+  });
 
   final bool skeleton;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +19,7 @@ class VideoCardVSkeleton extends StatelessWidget {
       crossAxisAlignment: .start,
       children: [
         AspectRatio(
-          aspectRatio: Style.aspectRatio,
+          aspectRatio: compact ? Style.aspectRatio16x9 : Style.aspectRatio,
           child: DecoratedBox(
             decoration: BoxDecoration(
               color: color,
@@ -37,21 +42,22 @@ class VideoCardVSkeleton extends StatelessWidget {
                   margin: const .only(top: 5),
                 ),
                 const Spacer(),
-                Row(
-                  spacing: 8,
-                  children: [
-                    Container(
-                      height: 11,
-                      color: color,
-                      width: 40,
-                    ),
-                    Container(
-                      height: 11,
-                      color: color,
-                      width: 40,
-                    ),
-                  ],
-                ),
+                if (!compact)
+                  Row(
+                    spacing: 8,
+                    children: [
+                      Container(
+                        height: 11,
+                        color: color,
+                        width: 40,
+                      ),
+                      Container(
+                        height: 11,
+                        color: color,
+                        width: 40,
+                      ),
+                    ],
+                  ),
                 Container(
                   height: 11,
                   width: 75,

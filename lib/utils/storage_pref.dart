@@ -535,10 +535,10 @@ abstract final class Pref {
       _setting.get(SettingBoxKey.isPureBlackTheme, defaultValue: false);
 
   static bool get antiGoodsDyn =>
-      _setting.get(SettingBoxKey.antiGoodsDyn, defaultValue: false);
+      _setting.get(SettingBoxKey.antiGoodsDyn, defaultValue: true);
 
   static bool get antiGoodsReply =>
-      _setting.get(SettingBoxKey.antiGoodsReply, defaultValue: false);
+      _setting.get(SettingBoxKey.antiGoodsReply, defaultValue: true);
 
   static bool get expandDynLivePanel =>
       _setting.get(SettingBoxKey.expandDynLivePanel, defaultValue: false);
@@ -749,11 +749,11 @@ abstract final class Pref {
       _setting.get(SettingBoxKey.p1080, defaultValue: true);
 
   static int get customColor =>
-      _setting.get(SettingBoxKey.customColor, defaultValue: 0);
+      _setting.get(SettingBoxKey.customColor, defaultValue: 1);
 
   static bool get dynamicColor =>
       !Platform.isIOS &&
-      _setting.get(SettingBoxKey.dynamicColor, defaultValue: true);
+      _setting.get(SettingBoxKey.dynamicColor, defaultValue: false);
 
   static bool get enableSystemProxy =>
       _setting.get(SettingBoxKey.enableSystemProxy, defaultValue: false);
@@ -780,7 +780,7 @@ abstract final class Pref {
       )];
 
   static bool get enableMYBar =>
-      _setting.get(SettingBoxKey.enableMYBar, defaultValue: true);
+      _setting.get(SettingBoxKey.enableMYBar, defaultValue: false);
 
   static Transition get pageTransition =>
       Transition.values[_setting.get(
@@ -798,7 +798,7 @@ abstract final class Pref {
       _setting.get(SettingBoxKey.autoPiP, defaultValue: false);
 
   static bool get enableSponsorBlock =>
-      _setting.get(SettingBoxKey.enableSponsorBlock, defaultValue: false);
+      _setting.get(SettingBoxKey.enableSponsorBlock, defaultValue: true);
 
   static bool get enableHA =>
       _setting.get(SettingBoxKey.enableHA, defaultValue: true);

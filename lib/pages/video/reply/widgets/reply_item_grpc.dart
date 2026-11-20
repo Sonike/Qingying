@@ -199,6 +199,16 @@ Widget _replyHeaderLayout({
     ),
   );
 
+  return _withFanCard(header, context, cardImage, cardNumber, cardFanColor);
+}
+
+Widget _withFanCard(
+  Widget header,
+  BuildContext context,
+  String? cardImage,
+  String? cardNumber,
+  Color? cardFanColor,
+) {
   if (cardImage == null) return header;
 
   const double cardHeight = 38;
@@ -406,6 +416,7 @@ class ReplyItemGrpc extends StatelessWidget {
     required this.replyLevel,
     this.replyReply,
     this.needDivider = true,
+    this.videoComment = false,
     this.onReply,
     this.onDelete,
     this.upMid,
@@ -426,6 +437,7 @@ class ReplyItemGrpc extends StatelessWidget {
   final int replyLevel;
   final void Function(ReplyInfo replyItem, int? rpid)? replyReply;
   final bool needDivider;
+  final bool videoComment;
   final ValueChanged<ReplyInfo>? onReply;
   final void Function(ReplyInfo replyItem, int? subIndex)? onDelete;
   final Int64? upMid;
@@ -508,6 +520,66 @@ class ReplyItemGrpc extends StatelessWidget {
   Widget _buildCommon(BuildContext context, ColorScheme colorScheme) {
     final replyControl = replyItem.replyControl;
     final noPad = replyLevel == 0 || depth >= 0;
+    if (videoComment) {
+      return _replyItemLayout(
+        context: context,
+        needDivider: needDivider,
+        onTap: () => replyReply?.call(replyItem, null),
+        onLongPress: () => _showMore(context),
+        content: _buildHeader(
+          context,
+          colorScheme,
+          videoBody: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 4),
+              if (replyControl.hasVoteOption())
+                _buildVoteOption(colorScheme, replyControl.voteOption),
+              _buildMessageWidget(context, colorScheme, replyControl),
+              ?_buildPictures(),
+              const SizedBox(height: 4),
+              _videoActions(context, colorScheme),
+              if (replyItem.count > Int64.ZERO)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4, bottom: 6),
+                  child: Material(
+                    color: colorScheme.surfaceContainerLow,
+                    borderRadius: const BorderRadius.all(Radius.circular(6)),
+                    child: InkWell(
+                      borderRadius: const BorderRadius.all(Radius.circular(6)),
+                      onTap: () => replyReply?.call(replyItem, null),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
+                        child: Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                '共${replyItem.count}条回复',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: colorScheme.textLink,
+                                ),
+                              ),
+                            ),
+                            Icon(
+                              Icons.chevron_right,
+                              size: 16,
+                              color: colorScheme.textLink,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      );
+    }
     return _replyItemLayout(
       context: context,
       depth: depth,
@@ -534,7 +606,11 @@ class ReplyItemGrpc extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context, ColorScheme colorScheme) {
+  Widget _buildHeader(
+    BuildContext context,
+    ColorScheme colorScheme, {
+    Widget? videoBody,
+  }) {
     final member = replyItem.member;
     final hasCard =
         PendantAvatar.showDecorate &&
@@ -542,34 +618,79 @@ class ReplyItemGrpc extends StatelessWidget {
         replyItem.memberV2.garb.hasCardImage();
     final hasCardNumber = hasCard && replyItem.memberV2.garb.hasCardNumber();
 
+    final onTap = replyItem.mid.isZero
+        ? null
+        : () {
+            feedBack();
+            Get.toNamed('/member?mid=${replyItem.mid}');
+          };
+    final avatar = PendantAvatar(
+      member.face,
+      size: 34,
+      badgeSize: 14,
+      vipStatus: member.vipStatus.toInt(),
+      officialType: member.hasOfficialVerifyType()
+          ? member.officialVerifyType.toInt()
+          : null,
+      pendantImage: member.hasGarbPendantImage()
+          ? member.garbPendantImage
+          : null,
+    );
+    final userInfo = _buildUserInfo(colorScheme);
+    final cardImage = hasCard ? replyItem.memberV2.garb.cardImage : null;
+    final cardNumber = hasCardNumber
+        ? '${replyItem.memberV2.garb.fanNumPrefix}\n${replyItem.memberV2.garb.cardNumber}'
+        : null;
+    final cardFanColor = hasCardNumber
+        ? ColourUtils.parseColor(replyItem.memberV2.garb.cardFanColor)
+        : null;
+    if (videoBody != null) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          GestureDetector(onTap: onTap, child: avatar),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(right: 4),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  GestureDetector(
+                    onTap: onTap,
+                    child: cardImage == null
+                        ? userInfo
+                        : SizedBox(
+                            width: double.infinity,
+                            height: 38,
+                            child: _withFanCard(
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: userInfo,
+                              ),
+                              context,
+                              cardImage,
+                              cardNumber,
+                              cardFanColor,
+                            ),
+                          ),
+                  ),
+                  videoBody,
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+    }
     return _replyHeaderLayout(
       context: context,
-      onTap: replyItem.mid.isZero
-          ? null
-          : () {
-              feedBack();
-              Get.toNamed('/member?mid=${replyItem.mid}');
-            },
-      avatar: PendantAvatar(
-        member.face,
-        size: 34,
-        badgeSize: 14,
-        vipStatus: member.vipStatus.toInt(),
-        officialType: member.hasOfficialVerifyType()
-            ? member.officialVerifyType.toInt()
-            : null,
-        pendantImage: member.hasGarbPendantImage()
-            ? member.garbPendantImage
-            : null,
-      ),
-      userInfo: _buildUserInfo(colorScheme),
-      cardImage: hasCard ? replyItem.memberV2.garb.cardImage : null,
-      cardNumber: hasCardNumber
-          ? '${replyItem.memberV2.garb.fanNumPrefix}\n${replyItem.memberV2.garb.cardNumber}'
-          : null,
-      cardFanColor: hasCardNumber
-          ? ColourUtils.parseColor(replyItem.memberV2.garb.cardFanColor)
-          : null,
+      avatar: avatar,
+      userInfo: userInfo,
+      onTap: onTap,
+      cardImage: cardImage,
+      cardNumber: cardNumber,
+      cardFanColor: cardFanColor,
     );
   }
 
@@ -595,24 +716,26 @@ class ReplyItemGrpc extends StatelessWidget {
       );
     }
 
-    return _replyUserInfoLayout(
-      nameRow: _replyUserNameRow(
-        name: Text(
-          member.name,
-          maxLines: 1,
-          overflow: .ellipsis,
-          style: TextStyle(
-            color: isVip ? colorScheme.vipColor : colorScheme.outline,
-            fontSize: 13,
-          ),
+    final nameRow = _replyUserNameRow(
+      name: Text(
+        member.name,
+        maxLines: 1,
+        overflow: .ellipsis,
+        style: TextStyle(
+          color: isVip ? colorScheme.vipColor : colorScheme.outline,
+          fontSize: 13,
         ),
-        level: BiliUtils.levelPicture(
-          member.level.toInt(),
-          isSeniorMember: member.isSeniorMember == 1,
-          height: 11,
-        ),
-        trailing: trailing,
       ),
+      level: BiliUtils.levelPicture(
+        member.level.toInt(),
+        isSeniorMember: member.isSeniorMember == 1,
+        height: 11,
+      ),
+      trailing: trailing,
+    );
+    if (videoComment) return nameRow;
+    return _replyUserInfoLayout(
+      nameRow: nameRow,
       timeLine: Text.rich(
         maxLines: 1,
         overflow: .ellipsis,
@@ -675,7 +798,9 @@ class ReplyItemGrpc extends StatelessWidget {
   ) {
     return TextMore.rich(
       primary: colorScheme.primary,
-      style: const TextStyle(height: 1.75, fontSize: 14),
+      style: videoComment
+          ? const TextStyle(height: 1.5, fontSize: 15)
+          : const TextStyle(height: 1.75, fontSize: 14),
       maxLines: replyLevel == 1 ? replyLengthLimit : null,
       TextSpan(
         children: [
@@ -778,8 +903,78 @@ class ReplyItemGrpc extends StatelessWidget {
     height: 1,
     fontSize: 12,
     fontWeight: .normal,
-    color: colorScheme.outline,
+    color: colorScheme.onSurfaceVariant,
   );
+
+  Widget _videoActions(BuildContext context, ColorScheme colors) {
+    final control = replyItem.replyControl;
+    final when = DateFormatUtils.dateFormat(
+      replyItem.ctime.toInt(),
+      short: DateFormatUtils.monthDayChinese,
+    );
+    final location = control.location
+        .replaceFirst(RegExp(r'^IP属地[：:]?\s*'), '')
+        .trim();
+    final metadata = [when, if (location.isNotEmpty) location].join(' ');
+    final style = _getActionStyle(colors);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      metadata,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: style.copyWith(
+                        color: colors.isLight
+                            ? const Color(0xFFC9CCD0)
+                            : const Color(0xFF757A81),
+                      ),
+                    ),
+                  ),
+                  if (onReply != null)
+                    _replyTextButton(
+                      label: '回复',
+                      textStyle: style,
+                      onPressed: () {
+                        feedBack();
+                        onReply!(replyItem);
+                      },
+                    ),
+                ],
+              ),
+            ),
+            ZanButtonGrpc(replyItem: replyItem, likeFirst: true),
+            SizedBox.square(
+              dimension: 30,
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                tooltip: '评论操作',
+                onPressed: () => _showMore(context),
+                icon: Icon(
+                  Icons.more_vert,
+                  size: 16,
+                  color: colors.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ],
+        ),
+        if (control.translationSwitch == .TRANSLATION_SWITCH_SHOW_TRANSLATION)
+          _buildTranslateBtn(context, colors, control, style)
+        else if (control.cardLabels.isNotEmpty)
+          Text(
+            control.cardLabels.map((e) => e.textContent).join('  '),
+            style: style,
+          ),
+      ],
+    );
+  }
 
   Widget _buttonAction(
     BuildContext context,
@@ -840,7 +1035,7 @@ class ReplyItemGrpc extends StatelessWidget {
             dialogBtn != null
                 ? replyControl.cardLabels.first.textContent
                 : replyControl.cardLabels.map((e) => e.textContent).join('  '),
-            style: textStyle.copyWith(color: colorScheme.secondary),
+            style: textStyle.copyWith(color: colorScheme.onSurfaceVariant),
           ),
         ?dialogBtn,
       ],
@@ -916,7 +1111,7 @@ class ReplyItemGrpc extends StatelessWidget {
             children: [
               TextSpan(
                 text: childReply.member.name,
-                style: TextStyle(color: colorScheme.primary),
+                style: TextStyle(color: colorScheme.textLink),
                 recognizer: NoDeadlineTapGestureRecognizer()
                   ..onTap = () {
                     feedBack();
@@ -983,7 +1178,7 @@ class ReplyItemGrpc extends StatelessWidget {
                 ),
               TextSpan(
                 text: '共${replyItem.count}条回复',
-                style: TextStyle(color: colorScheme.primary),
+                style: TextStyle(color: colorScheme.textLink),
               ),
             ],
           ),
@@ -1040,14 +1235,14 @@ class ReplyItemGrpc extends StatelessWidget {
             child: CachedNetworkImage(
               height: 19,
               memCacheHeight: 19.cacheSize(context),
-              color: colorScheme.primary,
+              color: colorScheme.textLink,
               imageUrl: ImageUtils.thumbnailUrl(url.prefixIcon),
               placeholder: (_, _) => const SizedBox.shrink(),
             ),
           ),
         TextSpan(
           text: isCv ? '[笔记] ' : url.title,
-          style: TextStyle(color: colorScheme.primary),
+          style: TextStyle(color: colorScheme.textLink),
           recognizer: NoDeadlineTapGestureRecognizer()
             ..onTap = () {
               if (url.appUrlSchema.isEmpty) {
@@ -1128,7 +1323,9 @@ class ReplyItemGrpc extends StatelessWidget {
           spanChildren.add(
             TextSpan(
               text: matchStr,
-              style: TextStyle(color: colorScheme.primary),
+              style: TextStyle(
+                color: colorScheme.textLink,
+              ),
               recognizer: NoDeadlineTapGestureRecognizer()
                 ..onTap = () =>
                     Get.toNamed('/member?mid=${content.atNameToMid[name]}'),
@@ -1138,7 +1335,7 @@ class ReplyItemGrpc extends StatelessWidget {
           spanChildren.add(
             TextSpan(
               text: '投票: ${content.vote.title}',
-              style: TextStyle(color: colorScheme.primary),
+              style: TextStyle(color: colorScheme.textLink),
               recognizer: NoDeadlineTapGestureRecognizer()
                 ..onTap = () =>
                     showVoteDialog(context, content.vote.id.toInt()),
@@ -1161,7 +1358,7 @@ class ReplyItemGrpc extends StatelessWidget {
           spanChildren.add(
             TextSpan(
               text: isValid ? ' $matchStr ' : matchStr,
-              style: isValid ? TextStyle(color: colorScheme.primary) : null,
+              style: isValid ? TextStyle(color: colorScheme.textLink) : null,
               recognizer: isValid
                   ? (NoDeadlineTapGestureRecognizer()
                       ..onTap = () {
@@ -1191,7 +1388,7 @@ class ReplyItemGrpc extends StatelessWidget {
             spanChildren.add(
               TextSpan(
                 text: matchStr,
-                style: TextStyle(color: colorScheme.primary),
+                style: TextStyle(color: colorScheme.textLink),
                 recognizer: NoDeadlineTapGestureRecognizer()
                   ..onTap = () {
                     Get.toNamed(
@@ -1205,7 +1402,7 @@ class ReplyItemGrpc extends StatelessWidget {
             spanChildren.add(
               TextSpan(
                 text: matchStr,
-                style: TextStyle(color: colorScheme.primary),
+                style: TextStyle(color: colorScheme.textLink),
                 recognizer: NoDeadlineTapGestureRecognizer()
                   ..onTap = () => PageUtils.handleWebview(matchStr),
               ),
@@ -1239,7 +1436,7 @@ class ReplyItemGrpc extends StatelessWidget {
 
       final hasClickUrl = content.richText.note.hasClickUrl();
       if (hasClickUrl || content.richText.opus.hasOpusId()) {
-        color = colorScheme.primary;
+        color = colorScheme.textLink;
         recognizer = NoDeadlineTapGestureRecognizer()
           ..onTap = () => hasClickUrl
               ? PiliScheme.routePushFromUrl(content.richText.note.clickUrl)

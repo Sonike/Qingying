@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/style.dart';
+import 'package:PiliPlus/utils/bili_colors.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/font_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -34,6 +35,32 @@ abstract final class ThemeUtils {
   }) {
     final fontWeight = Pref.appFontWeight;
     final fontFamily = FontUtils.fontFamily;
+
+    if (!isDynamic && Pref.customColor == 1) {
+      final pink = isDark ? BiliColors.pinkDark : BiliColors.pinkLight;
+      final pinkContainer = Color(isDark ? 0xFF2F1A22 : 0xFFFFECF1);
+      final onPinkContainer = Color(isDark ? 0xFFE38CAA : 0xFFAD1C5B);
+      colorScheme = colorScheme.copyWith(
+        primary: pink,
+        onPrimary: Colors.white,
+        secondary: pink,
+        primaryContainer: pinkContainer,
+        onPrimaryContainer: onPinkContainer,
+        secondaryContainer: pinkContainer,
+        onSecondaryContainer: onPinkContainer,
+        surface: Color(isDark ? 0xFF17181A : 0xFFFFFFFF),
+        surfaceContainerLowest: Color(isDark ? 0xFF111214 : 0xFFFFFFFF),
+        surfaceContainerLow: Color(isDark ? 0xFF1E2022 : 0xFFF6F7F8),
+        surfaceContainer: Color(isDark ? 0xFF232527 : 0xFFF1F2F3),
+        surfaceContainerHigh: Color(isDark ? 0xFF292A2D : 0xFFEDEEEF),
+        surfaceContainerHighest: Color(isDark ? 0xFF353639 : 0xFFE3E5E7),
+        onSurface: Color(isDark ? 0xFFE7E9EB : 0xFF18191C),
+        onSurfaceVariant: Color(isDark ? 0xFFA2A7AE : 0xFF61666D),
+        outline: Color(isDark ? 0xFF757A81 : 0xFF9499A0),
+        outlineVariant: Color(isDark ? 0xFF2F3134 : 0xFFE3E5E7),
+        onInverseSurface: Color(isDark ? 0xFF303236 : 0xFFF1F2F3),
+      );
+    }
 
     TextTheme? textTheme;
     if (fontWeight != .normal) {

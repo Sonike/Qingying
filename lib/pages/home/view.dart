@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/custom_height_widget.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
@@ -43,9 +44,9 @@ class _HomePageState extends CommonPageState<HomePage>
     Widget tabBar;
     if (_homeController.tabs.length > 1) {
       tabBar = Padding(
-        padding: const EdgeInsets.only(top: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 4),
         child: SizedBox(
-          height: 42,
+          height: 41,
           width: double.infinity,
           child: TabBar(
             controller: _homeController.tabController,
@@ -54,7 +55,18 @@ class _HomePageState extends CommonPageState<HomePage>
             dividerColor: Colors.transparent,
             dividerHeight: 0,
             splashBorderRadius: Style.mdRadius,
-            tabAlignment: TabAlignment.center,
+            tabAlignment: TabAlignment.start,
+            labelPadding: const EdgeInsets.symmetric(horizontal: 14),
+            labelColor: _colorScheme.primary,
+            unselectedLabelColor: _colorScheme.onSurfaceVariant,
+            labelStyle: const TextStyle(fontSize: 16, fontWeight: .w600),
+            unselectedLabelStyle: const TextStyle(fontSize: 15),
+            indicatorSize: TabBarIndicatorSize.label,
+            indicator: UnderlineTabIndicator(
+              borderRadius: BorderRadius.circular(2),
+              borderSide: BorderSide(width: 3, color: _colorScheme.primary),
+              insets: const EdgeInsets.symmetric(horizontal: 4),
+            ),
             onTap: (_) {
               feedBack();
               if (!_homeController.tabController.indexIsChanging) {
@@ -92,14 +104,14 @@ class _HomePageState extends CommonPageState<HomePage>
   }
 
   Widget customAppBar() {
-    const padding = EdgeInsets.fromLTRB(14, 6, 14, 0);
+    const padding = EdgeInsets.fromLTRB(12, 1, 6, 0);
     final child = Row(
       children: [
-        searchBar(),
-        const SizedBox(width: 4),
-        msgBadge(_mainController),
-        const SizedBox(width: 8),
         userAvatar(colorScheme: _colorScheme, mainController: _mainController),
+        const SizedBox(width: 10),
+        searchBar(),
+        const SizedBox(width: 3),
+        msgBadge(_mainController, showGuestEntry: true),
       ],
     );
     if (_homeController.hideTopBar) {
@@ -145,43 +157,56 @@ class _HomePageState extends CommonPageState<HomePage>
   Widget searchBar() {
     const borderRadius = BorderRadius.all(Radius.circular(25));
     return Expanded(
-      child: SizedBox(
-        height: 44,
-        child: Material(
-          borderRadius: borderRadius,
-          color: _colorScheme.onSecondaryContainer.withValues(alpha: 0.05),
-          child: InkWell(
-            borderRadius: borderRadius,
-            splashColor: _colorScheme.primaryContainer.withValues(
-              alpha: 0.3,
+      child: Semantics(
+        container: true,
+        button: true,
+        child: SizedBox(
+          height: 34,
+          child: Material(
+            shape: RoundedRectangleBorder(
+              borderRadius: borderRadius,
+              side: BorderSide(color: _colorScheme.outline, width: 1),
             ),
-            onTap: () => Get.toNamed(
-              '/search',
-              parameters: _homeController.enableSearchWord
-                  ? {'hintText': _homeController.defaultSearch.value}
-                  : null,
-            ),
-            child: Row(
-              children: [
-                const SizedBox(width: 14),
-                Icon(
-                  Icons.search_outlined,
-                  color: _colorScheme.onSecondaryContainer,
-                  semanticLabel: '搜索',
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Obx(
-                    () => Text(
-                      _homeController.defaultSearch.value,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: _colorScheme.outline),
+            color: _colorScheme.surface,
+            child: InkWell(
+              borderRadius: borderRadius,
+              splashColor: _colorScheme.primaryContainer.withValues(
+                alpha: 0.3,
+              ),
+              onTap: () => Get.toNamed(
+                '/search',
+                parameters: _homeController.enableSearchWord
+                    ? {'hintText': _homeController.defaultSearch.value}
+                    : null,
+              ),
+              child: Row(
+                children: [
+                  const SizedBox(width: 11),
+                  Icon(
+                    Icons.search_outlined,
+                    size: 19,
+                    color: _colorScheme.onSurfaceVariant,
+                    semanticLabel: '搜索',
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Obx(
+                      () => Text(
+                        _homeController.defaultSearch.value.isEmpty
+                            ? '搜索视频、UP 主'
+                            : _homeController.defaultSearch.value,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: _colorScheme.onSurfaceVariant,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 5),
-              ],
+                  const SizedBox(width: 5),
+                ],
+              ),
             ),
           ),
         ),
@@ -195,6 +220,7 @@ Widget userAvatar({
   required MainController mainController,
 }) {
   return Semantics(
+    container: true,
     label: "我的",
     child: Obx(
       () {
@@ -246,19 +272,23 @@ Widget userAvatar({
           );
         }
         return SizedBox(
-          width: 38,
-          height: 38,
+          width: 36,
+          height: 36,
           child: IconButton(
             tooltip: '点击登录',
             style: IconButton.styleFrom(
               padding: .zero,
-              backgroundColor: colorScheme.onInverseSurface,
+              iconSize: 36,
             ),
             onPressed: mainController.toMinePage,
-            icon: Icon(
-              Icons.person_rounded,
-              size: 22,
-              color: colorScheme.primary,
+            icon: ClipOval(
+              child: Image.asset(
+                Assets.avatarPlaceHolder,
+                width: 36,
+                height: 36,
+                fit: BoxFit.cover,
+                excludeFromSemantics: true,
+              ),
             ),
           ),
         );
@@ -267,7 +297,7 @@ Widget userAvatar({
   );
 }
 
-Widget msgBadge(MainController mainController) {
+Widget msgBadge(MainController mainController, {bool showGuestEntry = false}) {
   return Obx(
     () {
       if (mainController.accountService.isLogin.value) {
@@ -288,8 +318,15 @@ Widget msgBadge(MainController mainController) {
                 ? const Alignment(0.0, -0.85)
                 : const Alignment(1.0, -0.85),
             label: isNumBadge && count != null ? Text(count) : null,
-            child: const Icon(Icons.notifications_none),
+            child: const Icon(Icons.mail_outline_rounded, size: 24),
           ),
+        );
+      }
+      if (showGuestEntry) {
+        return IconButton(
+          tooltip: '登录后查看消息',
+          icon: const Icon(Icons.mail_outline_rounded, size: 24),
+          onPressed: () => Get.toNamed('/loginPage'),
         );
       }
       return const SizedBox.shrink();

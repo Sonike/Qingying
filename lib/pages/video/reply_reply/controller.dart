@@ -177,7 +177,10 @@ class VideoReplyReplyController extends ReplyController
     return super.onReload();
   }
 
-  Future<ReplyInfo?> _sendReply(ReplyInfo replyItem) async {
+  Future<ReplyInfo?> _sendReply(
+    ReplyInfo replyItem, {
+    bool openEmoji = false,
+  }) async {
     final (bool inputDisable, String? hint) = replyHint;
     if (inputDisable) return null;
 
@@ -189,6 +192,8 @@ class VideoReplyReplyController extends ReplyController
       PublishRoute<ReplyInfo>(
         pageBuilder: (context, _, _) {
           return ReplyPage(
+            autofocus: !openEmoji,
+            panelType: openEmoji ? .emoji : .none,
             hint: hint,
             oid: oid,
             root: root,
@@ -225,10 +230,12 @@ class VideoReplyReplyController extends ReplyController
     int? replyType,
     covariant int index = -1,
     MentionItem? mentionItem,
+    bool openEmoji = false,
   }) async {
     assert(index != -1 || replyItem.root == replyItem.id);
 
-    if (await _sendReply(replyItem) case final replyInfo?) {
+    if (await _sendReply(replyItem, openEmoji: openEmoji)
+        case final replyInfo?) {
       loadingState
         ..value.dataOrNull?.insert(index + 1, replyInfo)
         ..refresh();

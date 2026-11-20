@@ -417,14 +417,14 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
       if (isSelectable) {
         return SelectionText.rich(
           textSpan,
-          style: const TextStyle(fontSize: 16),
+          style: const TextStyle(fontSize: 16, fontWeight: .w600, height: 1.37),
         );
       }
       return Text.rich(
         textSpan,
         maxLines: isExpand ? null : 2,
         overflow: isExpand ? null : .ellipsis,
-        style: const TextStyle(fontSize: 16),
+        style: const TextStyle(fontSize: 16, fontWeight: .w600, height: 1.37),
       );
     }
 
@@ -444,11 +444,11 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
             tapTargetSize: .shrinkWrap,
             visualDensity: const VisualDensity(vertical: -2.8),
             foregroundColor: attr != 0
-                ? colorScheme.outline
-                : colorScheme.onSecondaryContainer,
+                ? colorScheme.onSurfaceVariant
+                : colorScheme.onPrimary,
             backgroundColor: attr != 0
-                ? colorScheme.onInverseSurface
-                : colorScheme.secondaryContainer,
+                ? colorScheme.surfaceContainer
+                : colorScheme.primary,
           ),
           child: Text(
             switch (attr) {
@@ -457,7 +457,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
               4 || 6 => '已互关',
               128 => '已拉黑',
               -10 => '特别关注',
-              _ => ' 关注 ',
+              _ => '＋ 关注',
             },
             style: const TextStyle(fontSize: 13),
           ),
@@ -504,8 +504,8 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
           Obx(
             () => ActionItem(
               animation: introController.tripleAnimation,
-              icon: const Icon(FontAwesomeIcons.b),
-              selectIcon: const Icon(FontAwesomeIcons.b),
+              icon: const Icon(MdiIcons.alphaBCircleOutline),
+              selectIcon: const Icon(MdiIcons.alphaBCircle),
               onTap: introController.actionCoinVideo,
               selectStatus: introController.hasCoin,
               semanticsLabel: '投币',

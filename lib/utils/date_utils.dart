@@ -1,6 +1,7 @@
 import 'package:intl/intl.dart' show DateFormat;
 
 abstract final class DateFormatUtils {
+  static final monthDayChinese = DateFormat('M月d日');
   static final shortFormat = DateFormat('MM-dd');
   static final longFormat = DateFormat('yyyy-MM-dd');
   static final _shortFormatD = DateFormat('MM-dd HH:mm');

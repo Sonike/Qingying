@@ -18,6 +18,12 @@ import 'package:material_ui/material_ui.dart';
 abstract final class Update {
   // 检查更新
   static Future<void> checkUpdate([bool isAuto = true]) async {
+    if (Platform.isAndroid) {
+      if (!isAuto) {
+        SmartDialog.showToast('当前为清映定制版，请使用同一签名的清映安装包更新');
+      }
+      return;
+    }
     if (kDebugMode) return;
     SmartDialog.dismiss();
     try {

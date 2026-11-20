@@ -55,7 +55,10 @@ class _LivePageState extends State<LivePage>
     return Container(
       clipBehavior: Clip.hardEdge,
       margin: const EdgeInsets.symmetric(horizontal: Style.safeSpace),
-      decoration: const BoxDecoration(borderRadius: Style.mdRadius),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainer,
+        borderRadius: Style.mdRadius,
+      ),
       child: refreshIndicator(
         key: controller.refreshKey,
         onRefresh: controller.onRefresh,
@@ -77,7 +80,10 @@ class _LivePageState extends State<LivePage>
     if (list == null) return const SliverToBoxAdapter();
 
     final areaHeight = 10.0 + textScaler.scale(14);
-    final area = _buildLiveArea(list, areaHeight);
+    final area = ColoredBox(
+      color: colorScheme.surface,
+      child: _buildLiveArea(list, areaHeight),
+    );
 
     final follow = data.first;
     if (follow != null) {
@@ -124,11 +130,11 @@ class _LivePageState extends State<LivePage>
                       padding: const .symmetric(horizontal: 8, vertical: 5),
                       text: isFirst ? '推荐' : item.title!,
                       bgColor: isCurr
-                          ? colorScheme.secondaryContainer
+                          ? colorScheme.surfaceContainer
                           : Colors.transparent,
                       textColor: isCurr
-                          ? colorScheme.onSecondaryContainer
-                          : null,
+                          ? colorScheme.onSurface
+                          : colorScheme.onSurfaceVariant,
                       onTap: (_) => controller.onSelectArea(
                         index,
                         isFirst ? null : item,
@@ -143,7 +149,8 @@ class _LivePageState extends State<LivePage>
           iconButton(
             size: 26,
             iconSize: 18,
-            context: context,
+            bgColor: colorScheme.surfaceContainer,
+            iconColor: colorScheme.onSurfaceVariant,
             tooltip: '切换${controller.showFirstFrame ? '封面' : '首帧'}',
             icon: controller.showFirstFrame
                 ? const Icon(MdiIcons.alphaFBox)
@@ -157,7 +164,8 @@ class _LivePageState extends State<LivePage>
           iconButton(
             size: 26,
             iconSize: 16,
-            context: context,
+            bgColor: colorScheme.surfaceContainer,
+            iconColor: colorScheme.onSurfaceVariant,
             tooltip: '游戏赛事',
             icon: const Icon(Icons.gamepad),
             onPressed: () => Get.toNamed(
@@ -173,7 +181,8 @@ class _LivePageState extends State<LivePage>
           iconButton(
             size: 26,
             iconSize: 16,
-            context: context,
+            bgColor: colorScheme.surfaceContainer,
+            iconColor: colorScheme.onSurfaceVariant,
             tooltip: '全部标签',
             icon: const Icon(Icons.widgets),
             onPressed: () => Get.to(const LiveAreaPage()),
@@ -208,37 +217,40 @@ class _LivePageState extends State<LivePage>
           if (controller.newTags case final newTags? when newTags.isNotEmpty)
             SliverPinnedHeader(
               backgroundColor: colorScheme.surface,
-              child: SizedBox(
-                // 8+10+13*textScaler
-                height: 18.0 + textScaler.scale(13),
-                child: Obx(() {
-                  final tagIndex = controller.tagIndex.value;
-                  return ListView.separated(
-                    scrollDirection: .horizontal,
-                    padding: const .only(bottom: 8),
-                    separatorBuilder: (_, _) => const SizedBox(width: 12),
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      final item = newTags[index];
-                      final isCurr = index == tagIndex;
-                      return SearchText(
-                        height: 1,
-                        fontSize: 13,
-                        padding: const .symmetric(horizontal: 8, vertical: 5),
-                        text: item.name!,
-                        bgColor: isCurr
-                            ? colorScheme.secondaryContainer
-                            : Colors.transparent,
-                        textColor: isCurr
-                            ? colorScheme.onSecondaryContainer
-                            : null,
-                        onTap: (value) =>
-                            controller.onSelectTag(index, item.sortType),
-                      );
-                    },
-                    itemCount: newTags.length,
-                  );
-                }),
+              child: ColoredBox(
+                color: colorScheme.surface,
+                child: SizedBox(
+                  // 8+10+13*textScaler
+                  height: 18.0 + textScaler.scale(13),
+                  child: Obx(() {
+                    final tagIndex = controller.tagIndex.value;
+                    return ListView.separated(
+                      scrollDirection: .horizontal,
+                      padding: const .only(bottom: 8),
+                      separatorBuilder: (_, _) => const SizedBox(width: 12),
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      itemBuilder: (context, index) {
+                        final item = newTags[index];
+                        final isCurr = index == tagIndex;
+                        return SearchText(
+                          height: 1,
+                          fontSize: 13,
+                          padding: const .symmetric(horizontal: 8, vertical: 5),
+                          text: item.name!,
+                          bgColor: isCurr
+                              ? colorScheme.surfaceContainer
+                              : Colors.transparent,
+                          textColor: isCurr
+                              ? colorScheme.onSurface
+                              : colorScheme.onSurfaceVariant,
+                          onTap: (value) =>
+                              controller.onSelectTag(index, item.sortType),
+                        );
+                      },
+                      itemCount: newTags.length,
+                    );
+                  }),
+                ),
               ),
             ),
           response != null && response.isNotEmpty

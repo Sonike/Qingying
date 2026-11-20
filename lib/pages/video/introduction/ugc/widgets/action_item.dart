@@ -42,8 +42,10 @@ class ActionItem extends StatelessWidget {
         : colorScheme.primary;
     Widget child = Icon(
       selectStatus ? selectIcon!.icon! : icon.icon,
-      size: 18,
-      color: selectStatus ? primary : icon.color ?? colorScheme.outline,
+      size: expand ? 22 : 18,
+      color: selectStatus
+          ? primary
+          : icon.color ?? colorScheme.onSurfaceVariant,
       semanticLabel: semanticsLabel,
     );
 

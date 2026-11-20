@@ -16,6 +16,9 @@ extension ColorSchemeExt on ColorScheme {
   Color get blue =>
       brightness.isLight ? BiliColors.blueLight : BiliColors.blueDark;
 
+  Color get textLink =>
+      isLight ? const Color(0xFF00699D) : const Color(0xFF58B1D4);
+
   Color get btnColor =>
       brightness.isLight ? BiliColors.pinkLight : const Color(0xFF8F0030);
 

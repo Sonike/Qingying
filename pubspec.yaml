@@ -17,7 +17,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
 # update when release
-version: 2.2.1+1
+version: 2.2.1-qy.12+12
 
 environment:
   sdk: ">=3.13.0"
@@ -240,11 +240,12 @@ flutter_launcher_icons:
   ios: true
   remove_alpha_ios: true
   image_path: assets/images/logo/logo_2.png
-  image_path_android: assets/images/logo/logo_2.png
+  image_path_android: assets/images/logo/logo.png
   image_path_ios: assets/images/logo/logo.png
-  adaptive_icon_background: "#ffffff"
-  adaptive_icon_foreground: assets/images/logo/logo_2.png
-  adaptive_icon_monochrome: assets/images/logo/logo_2.png
+  adaptive_icon_background: android/launcher-art/background.png
+  adaptive_icon_foreground: android/launcher-art/foreground.png
+  adaptive_icon_monochrome: android/launcher-art/foreground.png
+  adaptive_icon_foreground_inset: 0
   macos:
     generate: true
     image_path: assets/images/logo/logo.png

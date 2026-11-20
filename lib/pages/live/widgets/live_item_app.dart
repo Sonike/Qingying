@@ -33,6 +33,8 @@ class LiveCardVApp extends StatelessWidget {
     return Stack(
       children: [
         Card(
+          color: theme.colorScheme.surface,
+          surfaceTintColor: Colors.transparent,
           child: InkWell(
             onTap: () => PageUtils.toLiveRoom(item.roomid),
             onLongPress: onLongPress,

@@ -32,6 +32,7 @@ import 'package:PiliPlus/utils/app_sign.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
+import 'package:PiliPlus/utils/promoted_card.dart';
 import 'package:PiliPlus/utils/recommend_filter.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -106,7 +107,7 @@ abstract final class VideoHttp {
   }
 
   static bool _filterWebRcmd(dynamic i) {
-    if (i['goto'] != 'av') return true;
+    if (isPromotedCard(i) || i['goto'] != 'av') return true;
     if (i['owner'] != null &&
         GlobalData().blackMids.contains(i['owner']['mid'])) {
       return true;
@@ -115,10 +116,7 @@ abstract final class VideoHttp {
   }
 
   static bool _filterAppRcmd(dynamic i) {
-    if (i['card_goto'] == 'ad_av' ||
-        i['card_goto'] == 'ad_web_s' ||
-        i['ad_info'] != null ||
-        i['can_play'] != 1) {
+    if (isPromotedCard(i) || i['can_play'] != 1) {
       return true;
     }
     if (i['args'] != null &&

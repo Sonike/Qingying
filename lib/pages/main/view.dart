@@ -9,6 +9,7 @@ import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/pages/home/view.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
+import 'package:PiliPlus/pages/main/feed_nav_icon.dart';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/desktop/tray_controller.dart';
@@ -189,22 +190,48 @@ class _MainAppState extends PopScopeState<MainApp>
           () => BottomNavigationBar(
             currentIndex: _mainController.selectedIndex.value,
             onTap: _mainController.setIndex,
-            iconSize: 16,
-            selectedFontSize: 12,
-            unselectedFontSize: 12,
+            iconSize: 23,
+            elevation: 0,
+            backgroundColor: _colorScheme.surface,
+            selectedItemColor: _colorScheme.primary,
+            unselectedItemColor: _colorScheme.onSurfaceVariant,
+            selectedFontSize: 11.5,
+            unselectedFontSize: 11.5,
             type: .fixed,
             items: _mainController.navigationBars
                 .map(
                   (e) => BottomNavigationBarItem(
                     label: e.label,
-                    icon: _buildIcon(type: e),
-                    activeIcon: _buildIcon(type: e, selected: true),
+                    icon: Padding(
+                      padding: const EdgeInsets.only(top: 2, bottom: 3),
+                      child: _buildIcon(type: e, classic: true),
+                    ),
                   ),
                 )
                 .toList(),
           ),
         );
+        bottomNav = DecoratedBox(
+          position: DecorationPosition.foreground,
+          decoration: BoxDecoration(
+            border: Border(
+              top: BorderSide(color: _colorScheme.outlineVariant, width: 0),
+            ),
+          ),
+          child: bottomNav,
+        );
       }
+
+      // Keep touch ink off the shared bar surface. Selection is shown by
+      // the destination's icon and label; keyboard focus keeps its indicator.
+      bottomNav = Theme(
+        data: Theme.of(context).copyWith(
+          splashFactory: NoSplash.splashFactory,
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+        ),
+        child: bottomNav,
+      );
 
       if (_mainController.hideBottomBar) {
         if (_mainController.barOffset case final barOffset?) {
@@ -384,8 +411,14 @@ class _MainAppState extends PopScopeState<MainApp>
     return child;
   }
 
-  Widget _buildIcon({required NavigationBarType type, bool selected = false}) {
-    final icon = selected ? type.selectIcon : type.icon;
+  Widget _buildIcon({
+    required NavigationBarType type,
+    bool selected = false,
+    bool classic = false,
+  }) {
+    final icon = classic
+        ? FeedNavIcon(type)
+        : (selected ? type.selectIcon : type.icon);
     return type == .dynamics
         ? Obx(
             () {

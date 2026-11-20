@@ -13,9 +13,11 @@ class ZanButtonGrpc extends StatelessWidget {
   const ZanButtonGrpc({
     super.key,
     required this.replyItem,
+    this.likeFirst = false,
   });
 
   final ReplyInfo replyItem;
+  final bool likeFirst;
 
   Future<void> onHateReply(
     BuildContext context, {
@@ -97,7 +99,7 @@ class ZanButtonGrpc extends StatelessWidget {
     final action = replyItem.replyControl.action;
     final isLike = action == $fixnum.Int64.ONE;
     final isDislike = action == $fixnum.Int64.TWO;
-    final outline = theme.colorScheme.outline;
+    final outline = theme.colorScheme.onSurfaceVariant;
     final primary = theme.colorScheme.primary;
     final ButtonStyle style = TextButton.styleFrom(
       padding: EdgeInsets.zero,
@@ -120,61 +122,61 @@ class ZanButtonGrpc extends StatelessWidget {
       isProcessing = false;
     }
 
+    final dislike = SizedBox(
+      height: 32,
+      child: TextButton(
+        style: const ButtonStyle(
+          visualDensity: .compact,
+          tapTargetSize: .shrinkWrap,
+          padding: WidgetStatePropertyAll(.zero),
+          minimumSize: WidgetStatePropertyAll(.square(40)),
+        ),
+        onPressed: isLogin ? () => wrapProcessing(onHateReply) : _toastNotLogin,
+        child: Icon(
+          isDislike
+              ? FontAwesomeIcons.solidThumbsDown
+              : (likeFirst
+                    ? Icons.thumb_down_alt_outlined
+                    : FontAwesomeIcons.thumbsDown),
+          size: 16,
+          color: isDislike ? primary : outline,
+          semanticLabel: isDislike ? '已踩' : '点踩',
+        ),
+      ),
+    );
+    final like = SizedBox(
+      height: 32,
+      child: TextButton(
+        style: style,
+        onPressed: isLogin ? () => wrapProcessing(onLikeReply) : _toastNotLogin,
+        child: Row(
+          spacing: 4,
+          children: [
+            Icon(
+              isLike
+                  ? FontAwesomeIcons.solidThumbsUp
+                  : (likeFirst
+                        ? Icons.thumb_up_alt_outlined
+                        : FontAwesomeIcons.thumbsUp),
+              size: 16,
+              color: isLike ? primary : outline,
+              semanticLabel: isLike ? '已赞' : '点赞',
+            ),
+            if (!likeFirst || replyItem.like > 0)
+              Text(
+                NumUtils.numFormat(replyItem.like.toInt()),
+                style: TextStyle(
+                  color: isLike ? primary : outline,
+                  fontSize: theme.textTheme.labelSmall!.fontSize,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
     return Row(
       mainAxisSize: MainAxisSize.min,
-      children: [
-        SizedBox(
-          height: 32,
-          child: TextButton(
-            style: const ButtonStyle(
-              visualDensity: .compact,
-              tapTargetSize: .shrinkWrap,
-              padding: WidgetStatePropertyAll(.zero),
-              minimumSize: WidgetStatePropertyAll(.square(40)),
-            ),
-            onPressed: isLogin
-                ? () => wrapProcessing(onHateReply)
-                : _toastNotLogin,
-            child: Icon(
-              isDislike
-                  ? FontAwesomeIcons.solidThumbsDown
-                  : FontAwesomeIcons.thumbsDown,
-              size: 16,
-              color: isDislike ? primary : outline,
-              semanticLabel: isDislike ? '已踩' : '点踩',
-            ),
-          ),
-        ),
-        SizedBox(
-          height: 32,
-          child: TextButton(
-            style: style,
-            onPressed: isLogin
-                ? () => wrapProcessing(onLikeReply)
-                : _toastNotLogin,
-            child: Row(
-              spacing: 4,
-              children: [
-                Icon(
-                  isLike
-                      ? FontAwesomeIcons.solidThumbsUp
-                      : FontAwesomeIcons.thumbsUp,
-                  size: 16,
-                  color: isLike ? primary : outline,
-                  semanticLabel: isLike ? '已赞' : '点赞',
-                ),
-                Text(
-                  NumUtils.numFormat(replyItem.like.toInt()),
-                  style: TextStyle(
-                    color: isLike ? primary : outline,
-                    fontSize: theme.textTheme.labelSmall!.fontSize,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
+      children: likeFirst ? [like, dislike] : [dislike, like],
     );
   }
 }

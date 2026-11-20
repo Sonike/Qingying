@@ -137,7 +137,7 @@ List<SettingsModel> get styleSettings => [
     subtitle: 'Material You设计规范底栏，关闭可变窄',
     leading: Icon(Icons.design_services_outlined),
     setKey: SettingBoxKey.enableMYBar,
-    defaultVal: true,
+    defaultVal: false,
     needReboot: true,
   ),
   const SwitchModel(

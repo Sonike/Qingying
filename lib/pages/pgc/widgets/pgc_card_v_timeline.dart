@@ -22,6 +22,8 @@ class PgcCardVTimeline extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: ColorScheme.of(context).surface,
+      surfaceTintColor: Colors.transparent,
       shape: const RoundedRectangleBorder(borderRadius: Style.mdRadius),
       child: InkWell(
         borderRadius: Style.mdRadius,
@@ -92,7 +94,9 @@ class PgcCardVTimeline extends StatelessWidget {
               maxLines: 1,
               style: TextStyle(
                 fontSize: theme.textTheme.labelMedium!.fontSize,
-                color: theme.colorScheme.outline,
+                color: item.isPublished
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.outline,
               ),
             ),
           ],
