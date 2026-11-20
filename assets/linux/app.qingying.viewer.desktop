@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Qingying
+Name[zh_CN]=清映
+Comment=A third-party Bilibili Client developed in Flutter
+Comment[zh_CN]=使用 Flutter 开发的 BiliBili 第三方客户端
+Exec=qingying %u
+Icon=app.qingying.viewer
+Terminal=false
+StartupWMClass=app.qingying.viewer
+Categories=Video;AudioVideo;Player;
+MimeType=x-scheme-handler/bilibili;

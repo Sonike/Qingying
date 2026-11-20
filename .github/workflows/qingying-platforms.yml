@@ -1,0 +1,81 @@
+name: 清映多平台构建
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.platform }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { platform: ios, runner: macos-26 }
+          - { platform: macos, runner: macos-26 }
+          - { platform: windows, runner: windows-2025 }
+          - { platform: linux, runner: ubuntu-24.04 }
+    steps:
+      - uses: actions/checkout@v4
+      - if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libasound2-dev libmpv-dev elfutils xvfb dbus-x11
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+      - name: 准备平台补丁
+        shell: pwsh
+        run: ./lib/scripts/patch.ps1 ${{ matrix.platform }}
+      - name: 构建清映
+        shell: pwsh
+        env:
+          PLATFORM: ${{ matrix.platform }}
+        run: |
+          $version = Select-String -Path pubspec.yaml -Pattern '^version: (([0-9]+\.[0-9]+\.[0-9]+)-qy\.([0-9]+))\+([0-9]+)$'
+          if (!$version) { throw 'Invalid Qingying version' }
+          $fields = $version.Matches[0].Groups
+          $name = $fields[1].Value
+          $native = $fields[2].Value
+          $code = $fields[4].Value
+          if ($fields[3].Value -ne $code) { throw 'Qingying build number mismatch' }
+          $time = git show -s --format=%ct HEAD
+          # Desktop targets read the numeric native version from pubspec.
+          $spec = Get-Content pubspec.yaml -Raw
+          [IO.File]::WriteAllText((Resolve-Path pubspec.yaml), ($spec -replace '(?m)^version: [^\r\n]+', "version: $native+$code"))
+          $flags = @('--release', '--no-pub',
+                     "--dart-define=pili.name=$name", "--dart-define=pili.code=$code",
+                     "--dart-define=pili.time=$time", "--dart-define=pili.hash=$env:GITHUB_SHA")
+          if ($env:PLATFORM -eq 'ios') { $flags += '--no-codesign' }
+          flutter build $env:PLATFORM @flags
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          Add-Content $env:GITHUB_ENV "QY_VERSION=$name"
+          New-Item -ItemType Directory -Path dist -Force
+      - name: 验证并打包 Apple 应用
+        if: runner.os == 'macOS'
+        run: bash tool/package_apple.sh ${{ matrix.platform }}
+      - name: 验证并打包 Linux 应用
+        if: runner.os == 'Linux'
+        run: bash tool/package_linux.sh
+      - name: 验证并打包 Windows 应用
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $bundle = 'build/windows/x64/runner/Release'
+          foreach ($file in 'Qingying.exe','flutter_windows.dll','data/icudtl.dat','data/app.so') {
+            if (!(Test-Path "$bundle/$file")) { throw "Missing $file" }
+          }
+          $app = Start-Process "$bundle/Qingying.exe" -WorkingDirectory $bundle -PassThru
+          if ($app.WaitForExit(8000)) { throw "Qingying exited on startup: $($app.ExitCode)" }
+          Stop-Process -Id $app.Id
+          Compress-Archive -Path "$bundle/*" -DestinationPath "dist/Qingying-$env:QY_VERSION-windows-x64.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Qingying-${{ matrix.platform }}
+          path: dist/Qingying-*
+          if-no-files-found: error
+          compression-level: 0

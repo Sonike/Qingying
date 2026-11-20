@@ -95,7 +95,7 @@ class _LinuxWebviewState extends State<LinuxWebview> {
       await controller.setUserAgent(widget.userAgent);
       await controller.addJavaScriptChannel(
         JavaScriptChannelParams(
-          name: 'PiliPlus',
+          name: '清映',
           onMessageReceived: (message) {
             if (mounted) {
               widget.onWebMessageReceived?.call(message.message);

@@ -2,9 +2,9 @@
 
 # 清映 Qingying
 
-清映是基于 PiliPlus 的第三方哔哩哔哩 Android 客户端，面向希望减少广告干扰的手机和平板用户。
+清映是基于 PiliPlus 的第三方哔哩哔哩 客户端，支持 Android、iOS、macOS、Windows 和 Linux。
 
-**[下载 Android 安装包（ARM64）](https://github.com/Sonike/Qingying/releases/download/v2.2.1-qy.12/Qingying-2.2.1-qy.12-arm64.apk)** · [查看所有版本](https://github.com/Sonike/Qingying/releases)
+**[下载清映](https://github.com/Sonike/Qingying/releases/latest)** · [历史版本](https://github.com/Sonike/Qingying/releases)
 
 ## 这一版有什么
 
@@ -15,7 +15,13 @@
 
 ## 安装与构建
 
-当前安装包适用于 Android 7.0 及以上的 ARM64 设备。安装过清映的用户可以用相同签名的新版 APK 覆盖更新。
+| 系统 | 安装方式 |
+| --- | --- |
+| Android ARM64 | 安装 APK。Android 7.0 起支持，可覆盖更新已安装的清映。 |
+| iPhone / iPad | 下载 `ios-resign.ipa`，用自己的 Apple 签名和描述文件重签后安装。 |
+| macOS | 打开 DMG，将 Qingying 拖到「应用程序」。本版使用临时签名，未做 Apple 公证。 |
+| Windows x64 | 完整解压 ZIP，运行其中的 `Qingying.exe`。 |
+| Ubuntu 24.04 x64 | 在下载目录运行 `sudo apt install ./Qingying-*-linux-amd64.deb`，然后从应用菜单启动清映。 |
 
 本项目的编译环境、补丁和签名步骤见[清映构建说明](清映构建.md)。
 

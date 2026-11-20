@@ -35,7 +35,7 @@ class TrayController {
     );
     trayIcon
       ..icon = _icon
-      ..setTooltip(Constants.appName);
+      ..setTooltip(Constants.displayName);
 
     final trayMenu = Menu.create();
     if (trayMenu != null) {
@@ -44,7 +44,7 @@ class TrayController {
       trayMenu.addSeparator();
       _addTrayMenuItem(
         trayMenu,
-        '退出 ${Constants.appName}',
+        '退出 ${Constants.displayName}',
         WindowController.instance.onClose,
       );
       trayIcon.setContextMenu(_trayMenu);

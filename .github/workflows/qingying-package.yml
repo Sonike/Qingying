@@ -7,7 +7,7 @@ on:
       version:
         description: 已在 Releases 发布的清映版本号
         required: true
-        default: 2.2.1-qy.12
+        default: 2.2.1-qy.13
         type: string
 
 permissions:

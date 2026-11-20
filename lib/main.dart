@@ -223,7 +223,7 @@ void main() async {
         ..bounds = calcWindowBounds()
         ..minimumSize = DeviceUtils.desktopMinSize
         ..isVisibleInTaskbar = true
-        ..title = Constants.appName;
+        ..title = Constants.displayName;
       if (useContentUnderTitleBar) window.setContentUnderTitleBar(true);
       if (Pref.isWindowMaximized) window.maximize();
       void show([_]) => window
@@ -307,7 +307,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final (light, dark) = getAllTheme();
     return GetMaterialApp(
-      title: Constants.appName,
+      title: Constants.displayName,
       theme: light,
       darkTheme: dark,
       themeMode: ThemeUtils.themeMode = Pref.themeMode,
