@@ -52,35 +52,43 @@ jobs:
           case "$status" in
             200) echo "$(cat expected.sha256)  published.apk" | sha256sum -c - ;;
             404)
-              cat > settings.xml <<'XML'
-          <settings>
-            <servers><server>
-              <id>github</id>
-              <username>${env.GITHUB_ACTOR}</username>
-              <password>${env.GH_TOKEN}</password>
-            </server></servers>
-          </settings>
-          XML
-              cat > artifact.pom <<XML
-          <project xmlns="http://maven.apache.org/POM/4.0.0">
-            <modelVersion>4.0.0</modelVersion>
-            <groupId>io.github.sonike</groupId>
-            <artifactId>qingying-android</artifactId>
-            <version>$VERSION</version>
-            <packaging>apk</packaging>
-            <name>清映 Android (ARM64)</name>
-            <description>已签名的清映 Android ARM64 安装包</description>
-            <url>https://github.com/Sonike/Qingying</url>
-            <licenses><license><name>GNU General Public License v3.0</name>
-              <url>https://www.gnu.org/licenses/gpl-3.0.html</url></license></licenses>
-            <distributionManagement><repository><id>github</id>
-              <url>$REGISTRY</url></repository></distributionManagement>
-          </project>
-          XML
-              mvn --batch-mode --no-transfer-progress --settings settings.xml \
-                org.apache.maven.plugins:maven-deploy-plugin:3.1.4:deploy-file \
-                -DrepositoryId=github -Durl="$REGISTRY" -DpomFile=artifact.pom \
-                -Dfile=release.apk -Dextension=apk
+              echo "rootProject.name = 'qingying-android'" > settings.gradle
+              cat > build.gradle <<'GRADLE'
+          plugins { id 'maven-publish' }
+          publishing {
+              publications {
+                  android(MavenPublication) {
+                      groupId = 'io.github.sonike'
+                      artifactId = 'qingying-android'
+                      version = System.getenv('VERSION')
+                      artifact(file('release.apk')) { extension = 'apk' }
+                      pom {
+                          packaging = 'apk'
+                          name = '清映 Android (ARM64)'
+                          description = '已签名的清映 Android ARM64 安装包'
+                          url = 'https://github.com/Sonike/Qingying'
+                          licenses {
+                              license {
+                                  name = 'GNU General Public License v3.0'
+                                  url = 'https://www.gnu.org/licenses/gpl-3.0.html'
+                              }
+                          }
+                      }
+                  }
+              }
+              repositories {
+                  maven {
+                      name = 'github'
+                      url = uri(System.getenv('REGISTRY'))
+                      credentials {
+                          username = System.getenv('GITHUB_ACTOR')
+                          password = System.getenv('GH_TOKEN')
+                      }
+                  }
+              }
+          }
+          GRADLE
+              gradle --no-daemon --console=plain publishAndroidPublicationToGithubRepository
               fetch --fail --output published.apk "$base.apk"
               echo "$(cat expected.sha256)  published.apk" | sha256sum -c -
               ;;
